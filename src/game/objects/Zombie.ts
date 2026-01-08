@@ -14,16 +14,20 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
     private attackCooldown: number = 1000; // 1 second between attacks
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        // Register spritesheet if not exists
-        if (!scene.textures.exists("zombie_anim")) {
-            const texture = scene.textures.get("zombie_spritesheet");
-            if (texture) {
-                scene.textures.addSpriteSheet("zombie_spritesheet", texture.getSourceImage() as any, {
+        // Register all spritesheets if they don't have frame data
+        ["zombie", "exploder", "boss"].forEach(type => {
+            const key = `${type}_spritesheet`;
+            const texture = scene.textures.get(key);
+
+            // Check if texture exists and if it has only 1 frame (meaning it's just a raw image/texture, not a spritesheet yet)
+            if (texture && texture.frameTotal === 1) {
+                // Re-add as spritesheet
+                scene.textures.addSpriteSheet(key, texture.getSourceImage() as any, {
                     frameWidth: 48,
                     frameHeight: 48,
                 });
             }
-        }
+        });
 
         // Create animations if not exist
         ["normal", "exploder", "boss"].forEach(type => {
