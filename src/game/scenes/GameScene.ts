@@ -263,6 +263,11 @@ export class GameScene extends Phaser.Scene {
                 if (zombiesSpawned < this.zombiesPerWave) {
                     this.spawnZombie();
                     zombiesSpawned++;
+
+                    // Spawn boss on last spawn of boss wave
+                    if (this.wave % 5 === 0 && zombiesSpawned === this.zombiesPerWave) {
+                        this.spawnBoss();
+                    }
                 }
             },
             repeat: this.zombiesPerWave - 1,
@@ -328,11 +333,54 @@ export class GameScene extends Phaser.Scene {
         const zombie = new Zombie(this, x, y);
         zombie.setTarget(this.player);
 
-        // Determine if elite
+        // Determine type
+        let type: "normal" | "exploder" | "boss" = "normal";
         const isElite = Math.random() < GameConfig.zombie.eliteChance;
-        zombie.initialize(this.wave, isElite);
+
+        if (Math.random() < GameConfig.zombie.exploder.chance) {
+            type = "exploder";
+        }
+
+        zombie.initialize(this.wave, isElite, type);
 
         this.zombies.add(zombie);
+    }
+
+    spawnBoss() {
+        const { width, height } = this.cameras.main;
+
+        // Spawn boss at top center
+        const zombie = new Zombie(this, width / 2, -100);
+        zombie.setTarget(this.player);
+
+        // Initialize as boss
+        zombie.initialize(this.wave, true, "boss");
+
+        this.zombies.add(zombie);
+
+        // Boss announcement
+        const announcement = this.add
+            .text(width / 2, height / 2, "BOSS APPROACHING!", {
+                fontFamily: GameConfig.fonts.nosifer,
+                fontSize: "48px",
+                color: "#800080",
+            })
+            .setOrigin(0.5)
+            .setShadow(0, 0, "#800080", 20)
+            .setAlpha(0);
+
+        this.tweens.add({
+            targets: announcement,
+            alpha: { from: 0, to: 1 },
+            scale: { from: 0.5, to: 1.2 },
+            duration: 1000,
+            yoyo: true,
+            hold: 2000,
+            onComplete: () => announcement.destroy(),
+        });
+
+        // Boss sound
+        this.soundManager.play("wave"); // Reuse wave sound for now or add boss sound
     }
 
     shoot() {
@@ -548,8 +596,18 @@ export class GameScene extends Phaser.Scene {
 
     nextWave() {
         this.wave++;
+        this.wave++;
         this.zombiesKilled = 0;
-        this.zombiesPerWave += GameConfig.wave.zombiesIncreasePerWave;
+
+        // Boss wave check (every 5 waves)
+        const isBossWave = this.wave % 5 === 0;
+
+        if (isBossWave) {
+            // For boss wave, fewer minions but one big boss
+            this.zombiesPerWave = 5 + Math.floor(this.wave * 0.5);
+        } else {
+            this.zombiesPerWave += GameConfig.wave.zombiesIncreasePerWave;
+        }
 
         // Heal player slightly
         this.player.heal(GameConfig.scoring.healPerWave);

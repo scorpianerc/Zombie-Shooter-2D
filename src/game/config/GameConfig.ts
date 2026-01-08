@@ -36,6 +36,24 @@ export const GameConfig = {
         attackDamage: 10,
         attackCooldown: 1000,
         eliteChance: 0.1, // 10% chance to spawn elite
+
+        // Special Types
+        exploder: {
+            chance: 0.05, // 5% chance to replace normal spawn
+            color: 0xff4500, // Orange-Red
+            scale: 1.2,
+            speedMultiplier: 1.4, // Fast
+            healthMultiplier: 0.6, // Fragile
+            explosionRange: 150,
+            explosionDamage: 40,
+        },
+        boss: {
+            color: 0x800080, // Purple
+            scale: 3.0,
+            speedMultiplier: 0.5, // Slow
+            healthMultiplier: 15, // Tanky
+            damageMultiplier: 3,
+        },
     },
 
     // Difficulty Scaling (Multipliers per wave)

@@ -2,10 +2,13 @@ import * as Phaser from "phaser";
 import { Player } from "./Player";
 import { GameConfig } from "../config/GameConfig";
 
+export type ZombieType = "normal" | "exploder" | "boss";
+
 export class Zombie extends Phaser.Physics.Arcade.Sprite {
     private health: number = 50;
     private maxHealth: number = 50;
     private speed: number = 80;
+    public zombieType: ZombieType = "normal";
     private target: Player | null = null;
     private lastAttackTime: number = 0;
     private attackCooldown: number = 1000; // 1 second between attacks
@@ -55,20 +58,34 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
             this.body.setCircle(20, 4, 4);
         }
 
-        // Random speed variation
         this.speed = Phaser.Math.Between(GameConfig.zombie.speedVariation.min, GameConfig.zombie.speedVariation.max);
     }
 
-    initialize(wave: number, isElite: boolean) {
-        // Apply difficulty scaling
-        const healthMult = Math.pow(GameConfig.difficulty.healthMultiplier, wave - 1);
-        const speedMult = Math.pow(GameConfig.difficulty.speedMultiplier, wave - 1);
+    initialize(wave: number, isElite: boolean, type: ZombieType = "normal") {
+        this.zombieType = type;
+
+        // Base multipliers
+        let healthMult = Math.pow(GameConfig.difficulty.healthMultiplier, wave - 1);
+        let speedMult = Math.pow(GameConfig.difficulty.speedMultiplier, wave - 1);
+
+        // Type specific adjustments
+        if (this.zombieType === "exploder") {
+            healthMult *= GameConfig.zombie.exploder.healthMultiplier;
+            speedMult *= GameConfig.zombie.exploder.speedMultiplier;
+            this.setTint(GameConfig.zombie.exploder.color);
+            this.setScale(GameConfig.zombie.exploder.scale);
+        } else if (this.zombieType === "boss") {
+            healthMult *= GameConfig.zombie.boss.healthMultiplier;
+            speedMult *= GameConfig.zombie.boss.speedMultiplier;
+            this.setTint(GameConfig.zombie.boss.color);
+            this.setScale(GameConfig.zombie.boss.scale);
+        }
 
         this.maxHealth = Math.floor(GameConfig.zombie.baseHealth * healthMult);
         this.speed = Math.floor(this.speed * speedMult);
 
-        // Apply elite status
-        if (isElite) {
+        // Apply elite status (only to normal and exploder, boss is already elite enough)
+        if (isElite && this.zombieType !== "boss") {
             this.prepareElite();
         }
 
@@ -136,6 +153,10 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
     }
 
     die(): void {
+        if (this.zombieType === "exploder") {
+            this.explode();
+        }
+
         // Death animation
         this.scene.tweens.add({
             targets: this,
@@ -147,6 +168,29 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
                 this.destroy();
             },
         });
+    }
+
+    explode() {
+        // Create explosion visual
+        const explosion = this.scene.add.circle(this.x, this.y, 10, 0xffa500, 1);
+        this.scene.tweens.add({
+            targets: explosion,
+            scale: 15,
+            alpha: 0,
+            duration: 300,
+            onComplete: () => explosion.destroy()
+        });
+
+        // Flash camera
+        this.scene.cameras.main.shake(200, 0.01);
+
+        // Check distance to player
+        if (this.target && this.target.active) {
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, this.target.x, this.target.y);
+            if (dist < GameConfig.zombie.exploder.explosionRange) {
+                this.target.takeDamage(GameConfig.zombie.exploder.explosionDamage);
+            }
+        }
     }
 
     canAttack(): boolean {
