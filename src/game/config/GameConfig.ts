@@ -35,6 +35,15 @@ export const GameConfig = {
         hitboxRadius: 20,
         attackDamage: 10,
         attackCooldown: 1000,
+        eliteChance: 0.1, // 10% chance to spawn elite
+    },
+
+    // Difficulty Scaling (Multipliers per wave)
+    difficulty: {
+        healthMultiplier: 1.1, // +10% health per wave
+        speedMultiplier: 1.05, // +5% speed per wave
+        spawnDelayDecrement: 100, // -100ms spawn delay per wave
+        minSpawnDelay: 500, // Minimum delay between spawns
     },
 
     // Bullet settings
@@ -47,14 +56,14 @@ export const GameConfig = {
     // Wave settings
     wave: {
         initialZombies: 5,
-        zombiesIncreasePerWave: 2,
-        spawnDelay: 2000,
+        zombiesIncreasePerWave: 3, // Increased from 2
+        spawnDelay: 2000, // Initial spawn delay
         waveDelay: 3000,
     },
 
     // Power-up settings
     powerUp: {
-        dropChance: 0.25, // 25% chance on zombie kill
+        dropChance: 0.05, // Reduced from 0.25 (5% chance)
         types: {
             health: { heal: 30, duration: 0 },
             speed: { multiplier: 1.5, duration: 10000 },

@@ -1,8 +1,10 @@
 import * as Phaser from "phaser";
 import { Player } from "./Player";
+import { GameConfig } from "../config/GameConfig";
 
 export class Zombie extends Phaser.Physics.Arcade.Sprite {
     private health: number = 50;
+    private maxHealth: number = 50;
     private speed: number = 80;
     private target: Player | null = null;
     private lastAttackTime: number = 0;
@@ -54,7 +56,30 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Random speed variation
-        this.speed = Phaser.Math.Between(60, 100);
+        this.speed = Phaser.Math.Between(GameConfig.zombie.speedVariation.min, GameConfig.zombie.speedVariation.max);
+    }
+
+    initialize(wave: number, isElite: boolean) {
+        // Apply difficulty scaling
+        const healthMult = Math.pow(GameConfig.difficulty.healthMultiplier, wave - 1);
+        const speedMult = Math.pow(GameConfig.difficulty.speedMultiplier, wave - 1);
+
+        this.maxHealth = Math.floor(GameConfig.zombie.baseHealth * healthMult);
+        this.speed = Math.floor(this.speed * speedMult);
+
+        // Apply elite status
+        if (isElite) {
+            this.prepareElite();
+        }
+
+        this.health = this.maxHealth;
+    }
+
+    prepareElite() {
+        this.maxHealth *= 2;
+        this.speed *= 1.2;
+        this.setScale(1.6); // Larger
+        this.setTint(0xff0000); // Red tint
     }
 
     setTarget(player: Player): void {

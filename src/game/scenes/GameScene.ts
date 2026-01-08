@@ -251,14 +251,14 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    startWave() {
+    startWave(spawnDelay: number = GameConfig.wave.spawnDelay) {
         // Show wave announcement
         this.showWaveAnnouncement();
 
         let zombiesSpawned = 0;
 
         this.spawnTimer = this.time.addEvent({
-            delay: 2000,
+            delay: spawnDelay,
             callback: () => {
                 if (zombiesSpawned < this.zombiesPerWave) {
                     this.spawnZombie();
@@ -327,6 +327,11 @@ export class GameScene extends Phaser.Scene {
 
         const zombie = new Zombie(this, x, y);
         zombie.setTarget(this.player);
+
+        // Determine if elite
+        const isElite = Math.random() < GameConfig.zombie.eliteChance;
+        zombie.initialize(this.wave, isElite);
+
         this.zombies.add(zombie);
     }
 
@@ -550,9 +555,16 @@ export class GameScene extends Phaser.Scene {
         this.player.heal(GameConfig.scoring.healPerWave);
         this.updateHealthBar();
 
+        // Calculate new spawn delay (faster spawning)
+        const delayDecrease = (this.wave - 1) * GameConfig.difficulty.spawnDelayDecrement;
+        const newSpawnDelay = Math.max(
+            GameConfig.difficulty.minSpawnDelay,
+            GameConfig.wave.spawnDelay - delayDecrease
+        );
+
         // Start next wave after delay
         this.time.delayedCall(GameConfig.wave.waveDelay, () => {
-            this.startWave();
+            this.startWave(newSpawnDelay);
         });
     }
 
