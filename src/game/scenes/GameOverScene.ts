@@ -63,6 +63,10 @@ export class GameOverScene extends Phaser.Scene {
         const { width, height } = this.cameras.main;
         const { fonts } = GameConfig;
 
+        // Detect mobile for responsive sizing
+        const isMobile = width < 600 || this.sys.game.device.input.touch;
+        const scale = isMobile ? 0.7 : 1;
+
         // Dark red background
         this.cameras.main.setBackgroundColor("#1a0000");
 
@@ -73,22 +77,23 @@ export class GameOverScene extends Phaser.Scene {
         }
 
         // "YOU DIED" title with dramatic effect
+        const titleSize = isMobile ? "36px" : "64px";
         const gameOverText = this.add
-            .text(width / 2, 80, "YOU DIED", {
+            .text(width / 2, 60, "YOU DIED", {
                 fontFamily: fonts.nosifer,
-                fontSize: "64px",
+                fontSize: titleSize,
                 color: "#8B0000",
             })
             .setOrigin(0.5)
             .setAlpha(0);
 
-        gameOverText.setShadow(0, 0, "#8B0000", 40, true, true);
+        gameOverText.setShadow(0, 0, "#8B0000", isMobile ? 20 : 40, true, true);
 
         // Dramatic entrance animation
         this.tweens.add({
             targets: gameOverText,
             alpha: 1,
-            y: 100,
+            y: isMobile ? 70 : 100,
             duration: 1000,
             ease: "Bounce.easeOut",
         });
@@ -106,17 +111,17 @@ export class GameOverScene extends Phaser.Scene {
 
         // Current game stats
         this.time.delayedCall(500, () => {
-            this.createCurrentStats();
+            this.createCurrentStats(isMobile);
         });
 
         // Score history
         this.time.delayedCall(800, () => {
-            this.createScoreHistory();
+            this.createScoreHistory(isMobile);
         });
 
         // Buttons
         this.time.delayedCall(1200, () => {
-            this.createButtons();
+            this.createButtons(isMobile);
         });
     }
 
@@ -137,32 +142,34 @@ export class GameOverScene extends Phaser.Scene {
         });
     }
 
-    createCurrentStats() {
+    createCurrentStats(isMobile: boolean) {
         const { width } = this.cameras.main;
         const { fonts } = GameConfig;
-        const centerY = 200;
+        const centerY = isMobile ? 150 : 200;
+        const panelW = isMobile ? 260 : 360;
+        const panelH = isMobile ? 70 : 100;
 
         // Panel background
         const panel = this.add.graphics();
         panel.fillStyle(0x1a1a1a, 0.9);
-        panel.fillRoundedRect(width / 2 - 180, centerY - 50, 360, 100, 15);
-        panel.lineStyle(3, 0x8b0000);
-        panel.strokeRoundedRect(width / 2 - 180, centerY - 50, 360, 100, 15);
+        panel.fillRoundedRect(width / 2 - panelW / 2, centerY - panelH / 2, panelW, panelH, isMobile ? 10 : 15);
+        panel.lineStyle(isMobile ? 2 : 3, 0x8b0000);
+        panel.strokeRoundedRect(width / 2 - panelW / 2, centerY - panelH / 2, panelW, panelH, isMobile ? 10 : 15);
 
         // "YOUR SCORE" label
         this.add
-            .text(width / 2, centerY - 25, "YOUR SCORE", {
+            .text(width / 2, centerY - (isMobile ? 15 : 25), "YOUR SCORE", {
                 fontFamily: fonts.creepster,
-                fontSize: "20px",
+                fontSize: isMobile ? "14px" : "20px",
                 color: "#8B0000",
             })
             .setOrigin(0.5);
 
         // Animated score counter
         const scoreValue = this.add
-            .text(width / 2, centerY + 10, "0", {
+            .text(width / 2, centerY + (isMobile ? 5 : 10), "0", {
                 fontFamily: fonts.nosifer,
-                fontSize: "42px",
+                fontSize: isMobile ? "28px" : "42px",
                 color: "#e8e4d9",
             })
             .setOrigin(0.5);
@@ -179,24 +186,26 @@ export class GameOverScene extends Phaser.Scene {
 
         // Wave info
         this.add
-            .text(width / 2, centerY + 40, `Survived to Wave ${this.finalWave}`, {
+            .text(width / 2, centerY + (isMobile ? 25 : 40), `Survived to Wave ${this.finalWave}`, {
                 fontFamily: fonts.special,
-                fontSize: "16px",
+                fontSize: isMobile ? "12px" : "16px",
                 color: "#888888",
             })
             .setOrigin(0.5);
     }
 
-    createScoreHistory() {
+    createScoreHistory(isMobile: boolean) {
         const { width } = this.cameras.main;
         const { fonts } = GameConfig;
-        const startY = 320;
+        const startY = isMobile ? 230 : 320;
+        const panelW = isMobile ? 280 : 400;
+        const panelH = isMobile ? 100 : 150;
 
         // History title
         this.add
             .text(width / 2, startY, "HIGH SCORES", {
                 fontFamily: fonts.creepster,
-                fontSize: "24px",
+                fontSize: isMobile ? "16px" : "24px",
                 color: "#cc9900",
             })
             .setOrigin(0.5);
@@ -204,71 +213,65 @@ export class GameOverScene extends Phaser.Scene {
         // History panel
         const panel = this.add.graphics();
         panel.fillStyle(0x1a1a1a, 0.8);
-        panel.fillRoundedRect(width / 2 - 200, startY + 20, 400, 150, 10);
-        panel.lineStyle(2, 0x666666);
-        panel.strokeRoundedRect(width / 2 - 200, startY + 20, 400, 150, 10);
+        panel.fillRoundedRect(width / 2 - panelW / 2, startY + 15, panelW, panelH, isMobile ? 6 : 10);
+        panel.lineStyle(isMobile ? 1 : 2, 0x666666);
+        panel.strokeRoundedRect(width / 2 - panelW / 2, startY + 15, panelW, panelH, isMobile ? 6 : 10);
 
         if (this.scoreHistory.length === 0) {
             this.add
-                .text(width / 2, startY + 95, "No scores yet!", {
+                .text(width / 2, startY + 15 + panelH / 2, "No scores yet!", {
                     fontFamily: fonts.special,
-                    fontSize: "18px",
+                    fontSize: isMobile ? "12px" : "18px",
                     color: "#666666",
                 })
                 .setOrigin(0.5);
         } else {
-            // Display top 5 scores
+            const rowHeight = isMobile ? 18 : 25;
+            const fontSize = isMobile ? "11px" : "16px";
+
             this.scoreHistory.forEach((record, index) => {
-                const y = startY + 45 + index * 25;
+                const y = startY + 30 + index * rowHeight;
                 const isCurrentScore = index === 0 && record.score === this.finalScore;
                 const color = isCurrentScore ? "#ffcc00" : "#e8e4d9";
                 const rankColor = index === 0 ? "#ffd700" : index === 1 ? "#c0c0c0" : index === 2 ? "#cd7f32" : "#888888";
 
                 // Rank
                 this.add
-                    .text(width / 2 - 170, y, `${index + 1}.`, {
+                    .text(width / 2 - panelW / 2 + 15, y, `${index + 1}.`, {
                         fontFamily: fonts.special,
-                        fontSize: "16px",
+                        fontSize: fontSize,
                         color: rankColor,
                     })
                     .setOrigin(0, 0.5);
 
                 // Score
                 this.add
-                    .text(width / 2 - 130, y, `${record.score}`, {
+                    .text(width / 2 - panelW / 2 + 40, y, `${record.score}`, {
                         fontFamily: fonts.special,
-                        fontSize: "16px",
+                        fontSize: fontSize,
                         color: color,
                     })
                     .setOrigin(0, 0.5);
 
                 // Wave
                 this.add
-                    .text(width / 2 + 30, y, `Wave ${record.wave}`, {
+                    .text(width / 2, y, `Wave ${record.wave}`, {
                         fontFamily: fonts.special,
-                        fontSize: "14px",
+                        fontSize: isMobile ? "10px" : "14px",
                         color: "#888888",
-                    })
-                    .setOrigin(0, 0.5);
-
-                // Date
-                this.add
-                    .text(width / 2 + 140, y, record.date, {
-                        fontFamily: fonts.special,
-                        fontSize: "12px",
-                        color: "#666666",
                     })
                     .setOrigin(0, 0.5);
             });
         }
     }
 
-    createButtons() {
+    createButtons(isMobile: boolean) {
         const { width, height } = this.cameras.main;
-        const buttonY = height - 80;
+        const buttonY = isMobile ? height - 50 : height - 80;
+        const buttonSpacing = isMobile ? 80 : 130;
 
         // Try Again button (green)
-        this.createButton(width / 2 - 130, buttonY, "TRY AGAIN", 0x006600, () => {
+        this.createButton(width / 2 - buttonSpacing, buttonY, "TRY AGAIN", 0x006600, isMobile, () => {
             this.cameras.main.fade(500, 0, 0, 0, false, (_: Phaser.Cameras.Scene2D.Camera, progress: number) => {
                 if (progress === 1) {
                     this.scene.start("GameScene");
@@ -277,7 +280,7 @@ export class GameOverScene extends Phaser.Scene {
         });
 
         // Exit button (red)
-        this.createButton(width / 2 + 130, buttonY, "EXIT", 0x660000, () => {
+        this.createButton(width / 2 + buttonSpacing, buttonY, "EXIT", 0x660000, isMobile, () => {
             this.cameras.main.fade(500, 0, 0, 0, false, (_: Phaser.Cameras.Scene2D.Camera, progress: number) => {
                 if (progress === 1) {
                     this.scene.start("StartScene");
@@ -286,22 +289,26 @@ export class GameOverScene extends Phaser.Scene {
         });
     }
 
-    createButton(x: number, y: number, text: string, bgColor: number, callback: () => void) {
+    createButton(x: number, y: number, text: string, bgColor: number, isMobile: boolean, callback: () => void) {
         const { fonts } = GameConfig;
         const container = this.add.container(x, y);
+        const btnW = isMobile ? 120 : 200;
+        const btnH = isMobile ? 40 : 60;
+        const fontSize = isMobile ? "14px" : "22px";
+        const radius = isMobile ? 8 : 12;
 
         // Button background
         const bg = this.add.graphics();
         bg.fillStyle(bgColor, 0.9);
-        bg.fillRoundedRect(-100, -30, 200, 60, 12);
-        bg.lineStyle(3, 0x8b0000, 1);
-        bg.strokeRoundedRect(-100, -30, 200, 60, 12);
+        bg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, radius);
+        bg.lineStyle(isMobile ? 2 : 3, 0x8b0000, 1);
+        bg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, radius);
 
         // Button text
         const buttonText = this.add
             .text(0, 0, text, {
                 fontFamily: fonts.creepster,
-                fontSize: "22px",
+                fontSize: fontSize,
                 color: "#e8e4d9",
             })
             .setOrigin(0.5);
@@ -309,7 +316,7 @@ export class GameOverScene extends Phaser.Scene {
         container.add([bg, buttonText]);
 
         // Make interactive
-        container.setSize(200, 60);
+        container.setSize(btnW, btnH);
         container.setInteractive({ useHandCursor: true });
 
         // Initial fade in

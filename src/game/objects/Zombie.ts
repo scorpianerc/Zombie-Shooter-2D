@@ -14,15 +14,15 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
     private attackCooldown: number = 1000; // 1 second between attacks
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        // Register all spritesheets if they don't have frame data
+        // Register all spritesheets from raw textures if animations don't exist yet
         ["zombie", "exploder", "boss"].forEach(type => {
-            const key = `${type}_spritesheet`;
-            const texture = scene.textures.get(key);
+            const rawKey = `${type}_spritesheet`;      // Raw texture from AssetGenerator
+            const animKey = `${type}_anim`;            // Spritesheet with frames
 
-            // Check if texture exists and if it has only 1 frame (meaning it's just a raw image/texture, not a spritesheet yet)
-            if (texture && texture.frameTotal === 1) {
-                // Re-add as spritesheet
-                scene.textures.addSpriteSheet(key, texture.getSourceImage() as any, {
+            // Only convert if we haven't already and the raw texture exists
+            if (!scene.textures.exists(animKey) && scene.textures.exists(rawKey)) {
+                const texture = scene.textures.get(rawKey);
+                scene.textures.addSpriteSheet(animKey, texture.getSourceImage() as any, {
                     frameWidth: 48,
                     frameHeight: 48,
                 });
@@ -31,21 +31,19 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
 
         // Create animations if not exist
         ["normal", "exploder", "boss"].forEach(type => {
-            if (!scene.anims.exists(`${type}_walk`)) {
-                let textureKey = type === "normal" ? "zombie_spritesheet" : `${type}_spritesheet`;
-                // Check if texture exists (fallback to normal if not generated yet)
-                if (!scene.textures.exists(textureKey)) textureKey = "zombie_spritesheet";
+            const animKey = type === "normal" ? "zombie_anim" : `${type}_anim`;
 
+            if (!scene.anims.exists(`${type}_walk`)) {
                 scene.anims.create({
                     key: `${type}_walk`,
-                    frames: scene.anims.generateFrameNumbers(textureKey, { start: 1, end: 2 }),
+                    frames: scene.anims.generateFrameNumbers(animKey, { start: 0, end: 2 }),
                     frameRate: type === "boss" ? 4 : (type === "exploder" ? 8 : 6),
                     repeat: -1,
                 });
             }
         });
 
-        super(scene, x, y, "zombie_spritesheet");
+        super(scene, x, y, "zombie_anim");
 
         // Add to scene
         scene.add.existing(this);
@@ -55,7 +53,7 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
         // Setup physics body
         this.setScale(1.3);
         this.setDepth(5);
-        this.play("zombie_walk");
+        this.play("normal_walk");
 
         // Set circular hitbox
         if (this.body) {
@@ -113,7 +111,7 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
 
         // Ensure animation is playing
         if (!this.anims.isPlaying) {
-            this.play("zombie_walk", true);
+            this.play(`${this.zombieType}_walk`, true);
         }
 
         if (!this.target || !this.active) return;

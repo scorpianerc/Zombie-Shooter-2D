@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { BloodDripsContainer } from "@/components";
+import { BloodDripsContainer, OrientationPrompt } from "@/components";
 
 export const metadata: Metadata = {
     title: "Zombie Shooter 2D - Survive the Horde",
@@ -19,6 +19,8 @@ export default function RootLayout({
             <body className="bg-abyss font-special text-bone">
                 {/* Blood drip decorations */}
                 <BloodDripsContainer count={5} />
+                {/* Mobile orientation prompt */}
+                <OrientationPrompt />
                 {children}
             </body>
         </html>
