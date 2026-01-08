@@ -1,0 +1,50 @@
+/* Import theme and components */
+@import '../styles/theme.css';
+@import '../styles/animations.css';
+@import '../styles/components.css';
+
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Special Elite', cursive;
+  background: var(--abyss-dark);
+  color: var(--bone-white);
+}
+
+/* Background gradient applied to body */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background:
+    radial-gradient(ellipse at center, transparent 0%, var(--abyss-dark) 70%),
+    linear-gradient(180deg,
+      var(--abyss-dark) 0%,
+      var(--abyss-light) 30%,
+      var(--blood-dark) 100%);
+}
+
+/* Fog overlay on body */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.3;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      var(--fog-gray) 2px,
+      transparent 4px);
+  animation: fogMove 8s linear infinite;
+}

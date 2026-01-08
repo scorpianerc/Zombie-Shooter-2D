@@ -1,0 +1,20 @@
+/* Theme CSS - Color variables and base theme */
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Special+Elite&display=swap');
+
+:root {
+    /* Horror color palette */
+    --blood-red: #8B0000;
+    --blood-dark: #4a0000;
+    --blood-light: #a00000;
+    --zombie-green: #3d5c3d;
+    --zombie-rotten: #4a5c23;
+    --bone-white: #e8e4d9;
+    --fog-gray: rgba(100, 100, 100, 0.3);
+    --abyss-dark: #0a0a0a;
+    --abyss-light: #1a1a1a;
+
+    /* Shadows */
+    --glow-red: 0 0 20px rgba(139, 0, 0, 0.8);
+    --glow-green: 0 0 20px rgba(61, 92, 61, 0.8);
+    --glow-red-lg: 0 0 40px rgba(139, 0, 0, 0.6);
+}
