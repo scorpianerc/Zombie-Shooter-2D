@@ -98,98 +98,124 @@ export class AssetGenerator {
     }
 
     private generateZombie(): void {
+        // Normal Zombie
+        this.generateZombieTexture("zombie_spritesheet", "normal");
+        // Exploder Zombie
+        this.generateZombieTexture("exploder_spritesheet", "exploder");
+        // Boss Zombie
+        this.generateZombieTexture("boss_spritesheet", "boss");
+    }
+
+    private generateZombieTexture(key: string, type: "normal" | "exploder" | "boss"): void {
         const size = 48;
         const width = size * 3; // 3 frames
         const graphics = this.scene.make.graphics({ x: 0, y: 0 });
 
-        // Frame 0: Idle
-        this.drawZombieFrame(graphics, 0, 0);
+        this.drawZombieFrame(graphics, 0, 0, type);       // Idle
+        this.drawZombieFrame(graphics, size, 1, type);    // Walk 1
+        this.drawZombieFrame(graphics, size * 2, 2, type);// Walk 2
 
-        // Frame 1: Left leg forward
-        this.drawZombieFrame(graphics, size, 1);
-
-        // Frame 2: Right leg forward
-        this.drawZombieFrame(graphics, size * 2, 2);
-
-        graphics.generateTexture("zombie_spritesheet", width, size);
+        graphics.generateTexture(key, width, size);
         graphics.destroy();
     }
 
-    private drawZombieFrame(graphics: Phaser.GameObjects.Graphics, offsetX: number, frame: number): void {
+    private drawZombieFrame(graphics: Phaser.GameObjects.Graphics, offsetX: number, frame: number, type: "normal" | "exploder" | "boss"): void {
         const size = 48;
         const center = size / 2;
         const x = offsetX + center;
         const y = center;
 
-        // Legs animation (shuffling)
-        graphics.fillStyle(0x3a4c13);
+        // Visual configs
+        const config = {
+            normal: { skin: 0x4a5c23, clothes: 0x3a3a2a, eye: 0xff0000, bloated: false, armor: false },
+            exploder: { skin: 0xff4500, clothes: 0x221111, eye: 0xffff00, bloated: true, armor: false },
+            boss: { skin: 0x800080, clothes: 0x330033, eye: 0x00ff00, bloated: false, armor: true }
+        }[type];
+
+        // Legs animation
+        graphics.fillStyle(type === "boss" ? 0x222222 : 0x3a4c13);
+
+        let legW = type === "boss" ? 8 : 5;
+        let legH = 10;
 
         if (frame === 0) { // Idle
-            graphics.fillRect(x - 7, y + 16, 5, 8);
-            graphics.fillRect(x + 2, y + 16, 5, 8);
+            graphics.fillRect(x - 7, y + 16, legW, 8);
+            graphics.fillRect(x + 2, y + 16, legW, 8);
         } else if (frame === 1) { // Left forward
-            graphics.fillRect(x - 7, y + 14, 5, 10);
-            graphics.fillRect(x + 2, y + 18, 5, 6);
+            graphics.fillRect(x - 7, y + 14, legW, 10);
+            graphics.fillRect(x + 2, y + 18, legW, 6);
         } else { // Right forward
-            graphics.fillRect(x - 7, y + 18, 5, 6);
-            graphics.fillRect(x + 2, y + 14, 5, 10);
+            graphics.fillRect(x - 7, y + 18, legW, 6);
+            graphics.fillRect(x + 2, y + 14, legW, 10);
         }
 
-        // Shambling/Bobbing effect
         const bob = frame === 0 ? 0 : Math.sin(frame * Math.PI) * 2;
-        // Side sway for zombie walk
         const sway = frame === 0 ? 0 : (frame === 1 ? -1 : 1);
 
-        // Tattered body
-        graphics.fillStyle(0x4a5c23); // Rotten green
-        graphics.fillRoundedRect(x - 10 + sway, y - 6 + bob, 20, 24, 3);
+        // Body
+        graphics.fillStyle(config.skin);
+        if (config.bloated) {
+            // Exploder: Bloated round body
+            graphics.fillCircle(x + sway, y - 2 + bob, 14);
+            // Glowing cracks
+            graphics.lineStyle(2, 0xffff00, 0.7);
+            graphics.beginPath();
+            graphics.moveTo(x - 5 + sway, y - 5 + bob);
+            graphics.lineTo(x + 5 + sway, y + 2 + bob);
+            graphics.moveTo(x + 5 + sway, y - 5 + bob);
+            graphics.lineTo(x - 5 + sway, y + 2 + bob);
+            graphics.strokePath();
+        } else if (config.armor) {
+            // Boss: Armored Chest
+            graphics.fillStyle(0x333333); // Dark Armor
+            graphics.fillRoundedRect(x - 14 + sway, y - 10 + bob, 28, 28, 2);
+            // Core
+            graphics.fillStyle(0xcc00cc); // Purple Core
+            graphics.fillCircle(x + sway, y + bob, 6);
+            graphics.lineStyle(2, 0xff00ff);
+            graphics.strokeCircle(x + sway, y + bob, 6);
+        } else {
+            // Normal
+            graphics.fillRoundedRect(x - 10 + sway, y - 6 + bob, 20, 24, 3);
+        }
 
-        // Torn clothes patches
-        graphics.fillStyle(0x3a3a2a);
-        graphics.fillRect(x - 8 + sway, y + bob, 6, 8);
-        graphics.fillRect(x + 2 + sway, y + 4 + bob, 5, 6);
+        // Clothes (if not exploder mostly naked)
+        if (!config.bloated && !config.armor) {
+            graphics.fillStyle(config.clothes);
+            graphics.fillRect(x - 8 + sway, y + bob, 6, 8);
+            graphics.fillRect(x + 2 + sway, y + 4 + bob, 5, 6);
+        }
 
-        // Head - deformed
-        graphics.fillStyle(0x5a6c33); // Sickly green
-        graphics.fillCircle(x - 2 + sway, y - 10 + bob, 10);
-        graphics.fillCircle(x + 3 + sway, y - 8 + bob, 8);
+        // Head
+        graphics.fillStyle(config.armor ? 0x444444 : (config.bloated ? 0xff6600 : 0x5a6c33));
+        let headSize = config.armor ? 12 : (config.bloated ? 11 : 10);
 
-        // Red glowing eyes
-        graphics.fillStyle(0xff0000);
-        graphics.fillCircle(x - 4 + sway, y - 12 + bob, 3);
-        graphics.fillCircle(x + 4 + sway, y - 10 + bob, 3);
+        graphics.fillCircle(x - 2 + sway, y - 14 + bob, headSize);
 
-        // Dark eye pupils (crazy look)
-        graphics.fillStyle(0x000000);
-        graphics.fillCircle(x - 4 + sway, y - 12 + bob, 1);
-        graphics.fillCircle(x + 4.5 + sway, y - 10 + bob, 1);
+        // Eyes
+        graphics.fillStyle(config.eye);
+        graphics.fillCircle(x - 4 + sway, y - 16 + bob, 3);
+        graphics.fillCircle(x + 4 + sway, y - 14 + bob, 3);
 
-        // Open mouth
-        graphics.fillStyle(0x2a1a1a);
-        graphics.fillRect(x - 4 + sway, y - 4 + bob, 8, 4);
-
-        // Blood drips (mouth)
-        graphics.fillStyle(0x8b0000);
-        graphics.fillRect(x + 2 + sway, y - 4 + bob, 2, 6);
-        graphics.fillRect(x - 3 + sway, y - 2 + bob, 2, 4);
-
-        // Decayed arms (raised forward)
-        graphics.fillStyle(0x4a5c23);
-        graphics.fillRect(x - 16 + sway, y - 8 + bob, 8, 4);
-        graphics.fillRect(x + 8 + sway, y - 6 + bob, 8, 4);
-
-        // Clawed hands
-        graphics.fillStyle(0x3a4c13);
-        graphics.fillTriangle(
-            x - 18 + sway, y - 8 + bob,
-            x - 16 + sway, y - 2 + bob,
-            x - 20 + sway, y - 4 + bob
-        );
-        graphics.fillTriangle(
-            x + 16 + sway, y - 6 + bob,
-            x + 18 + sway, y + bob,
-            x + 14 + sway, y - 2 + bob
-        );
+        // Arms
+        graphics.fillStyle(config.skin);
+        if (config.armor) {
+            // Armored Shoulders
+            graphics.fillStyle(0x222222);
+            graphics.fillTriangle(
+                x - 20 + sway, y - 14 + bob,
+                x - 12 + sway, y - 14 + bob,
+                x - 16 + sway, y - 24 + bob
+            );
+            graphics.fillTriangle(
+                x + 20 + sway, y - 14 + bob,
+                x + 12 + sway, y - 14 + bob,
+                x + 16 + sway, y - 24 + bob
+            );
+        } else {
+            graphics.fillRect(x - 16 + sway, y - 8 + bob, 8, 4); // Left arm
+            graphics.fillRect(x + 8 + sway, y - 6 + bob, 8, 4);  // Right arm
+        }
     }
 
     private generateBullet(): void {

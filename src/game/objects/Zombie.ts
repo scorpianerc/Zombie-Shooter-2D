@@ -18,7 +18,7 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
         if (!scene.textures.exists("zombie_anim")) {
             const texture = scene.textures.get("zombie_spritesheet");
             if (texture) {
-                scene.textures.addSpriteSheet("zombie_anim", texture.getSourceImage() as any, {
+                scene.textures.addSpriteSheet("zombie_spritesheet", texture.getSourceImage() as any, {
                     frameWidth: 48,
                     frameHeight: 48,
                 });
@@ -26,22 +26,22 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Create animations if not exist
-        if (!scene.anims.exists("zombie_walk")) {
-            scene.anims.create({
-                key: "zombie_walk",
-                frames: scene.anims.generateFrameNumbers("zombie_anim", { start: 1, end: 2 }),
-                frameRate: 6, // Slower shambling
-                repeat: -1,
-            });
-            scene.anims.create({
-                key: "zombie_idle",
-                frames: scene.anims.generateFrameNumbers("zombie_anim", { start: 0, end: 0 }),
-                frameRate: 1,
-                repeat: -1,
-            });
-        }
+        ["normal", "exploder", "boss"].forEach(type => {
+            if (!scene.anims.exists(`${type}_walk`)) {
+                let textureKey = type === "normal" ? "zombie_spritesheet" : `${type}_spritesheet`;
+                // Check if texture exists (fallback to normal if not generated yet)
+                if (!scene.textures.exists(textureKey)) textureKey = "zombie_spritesheet";
 
-        super(scene, x, y, "zombie_anim");
+                scene.anims.create({
+                    key: `${type}_walk`,
+                    frames: scene.anims.generateFrameNumbers(textureKey, { start: 1, end: 2 }),
+                    frameRate: type === "boss" ? 4 : (type === "exploder" ? 8 : 6),
+                    repeat: -1,
+                });
+            }
+        });
+
+        super(scene, x, y, "zombie_spritesheet");
 
         // Add to scene
         scene.add.existing(this);
@@ -72,14 +72,15 @@ export class Zombie extends Phaser.Physics.Arcade.Sprite {
         if (this.zombieType === "exploder") {
             healthMult *= GameConfig.zombie.exploder.healthMultiplier;
             speedMult *= GameConfig.zombie.exploder.speedMultiplier;
-            this.setTint(GameConfig.zombie.exploder.color);
             this.setScale(GameConfig.zombie.exploder.scale);
         } else if (this.zombieType === "boss") {
             healthMult *= GameConfig.zombie.boss.healthMultiplier;
             speedMult *= GameConfig.zombie.boss.speedMultiplier;
-            this.setTint(GameConfig.zombie.boss.color);
             this.setScale(GameConfig.zombie.boss.scale);
         }
+
+        // Play correct animation
+        this.play(`${this.zombieType}_walk`, true);
 
         this.maxHealth = Math.floor(GameConfig.zombie.baseHealth * healthMult);
         this.speed = Math.floor(this.speed * speedMult);
