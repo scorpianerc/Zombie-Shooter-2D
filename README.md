@@ -6,19 +6,39 @@ Game survival 2D yang menegangkan, dibangun dengan Next.js dan Phaser.
 
 Bertahan hidup dari kiamat di **Zombie Shooter 2D**, sebuah game arcade shooter berbasis browser yang memacu adrenalin. Pemain akan dilempar ke dunia gelap yang tak kenal ampun dan dipenuhi oleh mayat hidup. Berbekal kecerdikan dan senjata andalan, tujuanmu sederhana: bertahan hidup selama mungkin.
 
-Dibuat menggunakan **Next.js** untuk antarmuka pengguna (UI) yang modern dan responsif, serta **Phaser** untuk fisika game dan rendering yang kuat, proyek ini mendemonstrasikan integrasi yang mulus antara manajemen state React dengan game engine HTML5.
+Dibuat menggunakan **Next.js** untuk antarmuka pengguna (UI) yang modern dan responsif, serta **Phaser** untuk fisika game dan rendering yang kuat. Kode kini telah **direfaktor** menjadi lebih modular dengan sistem Manajer terpisah untuk UI, Input, dan Suara, menjadikannya lebih mudah dikembangkan dan dipelihara.
 
 **Sorotan Utama:**
 *   **Aura Mencekam:** Visual gelap yang imersif dan desain suara yang mendukung.
 *   **Aksi Tanpa Henti:** Mekanisme survival berbasis gelombang (wave) yang semakin lama semakin sulit.
-*   **Kontrol Responsif:** Dioptimalkan untuk permainan desktop dengan pergerakan dan bidikan yang halus.
+*   **Dukungan Cross-Platform:** Dapat dimainkan di Desktop (Mouse & Keyboard) dan Mobile (Touch Controls).
 
 ## Fitur
 
 - **Gameplay Survival**: Bertarung melawan gelombang zombie yang tak ada habisnya.
-- **Grafik 2D**: Visual gaya arcade klasik.
-- **Tutorial Interaktif**: Pelajari kontrol sebelum terjun ke dalam aksi.
-- **Sistem Skor**: Lacak waktu bertahan hidup dan jumlah kill Anda.
+- **Variasi Musuh**:
+    - **Normal**: Zombie standar.
+    - **Exploder**: Zombie cepat yang meledak saat mati.
+    - **Boss**: Musuh raksasa dengan armor tebal yang muncul setiap 5 gelombang.
+- **Power-Ups**: Dapatkan bantuan dari item spesial:
+    - 💚 **Health**: Memulihkan darah.
+    - ⚡ **Speed**: Meningkatkan kecepatan gerak.
+    - 🔫 **Rapid Fire**: Meningkatkan kecepatan tembak.
+    - 🛡️ **Shield**: Memberikan kekebalan sementara.
+- **Dukungan Mobile**: Joystick virtual dan tombol tembak auto-aim untuk pengalaman mobile yang mulus.
+- **Sistem Skor & Highscore**: Lacak skor tertinggi dan lihat riwayat permainan Anda.
+
+## Kontrol
+
+### Desktop
+- **W, A, S, D / Panah**: Bergerak
+- **Mouse**: Membidik
+- **Klik Kiri**: Menembak
+- **ESC**: Pause Game
+
+### Mobile
+- **Joystick Virtual (Kiri)**: Bergerak
+- **Tombol FIRE (Kanan)**: Menembak (Otomatis membidik zombie terdekat)
 
 ## Memulai (Getting Started)
 

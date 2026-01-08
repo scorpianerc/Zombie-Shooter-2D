@@ -49,6 +49,42 @@ export class UIManager {
 
         // Pause Menu
         this.createPauseMenu(width, height);
+
+        // Mobile Pause Button
+        if (this.scene.sys.game.device.input.touch) {
+            this.createMobilePauseButton(width);
+        }
+    }
+
+    private createMobilePauseButton(width: number) {
+        const btnSize = 50;
+        const x = width - 40;
+        const y = 40;
+
+        const container = this.scene.add.container(x, y);
+        container.setDepth(100);
+        container.setScrollFactor(0);
+
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(0x8b0000, 0.8);
+        bg.fillCircle(0, 0, btnSize / 2);
+        bg.lineStyle(2, 0xffffff, 0.8);
+        bg.strokeCircle(0, 0, btnSize / 2);
+
+        // Pause icon (two vertical bars)
+        const icon = this.scene.add.graphics();
+        icon.fillStyle(0xffffff, 1);
+        icon.fillRect(-8, -10, 6, 20);
+        icon.fillRect(2, -10, 6, 20);
+
+        container.add([bg, icon]);
+        container.setSize(btnSize, btnSize);
+        container.setInteractive({ useHandCursor: true });
+
+        container.on("pointerdown", () => {
+            // Dispatch event or call method to toggle pause
+            this.scene.events.emit("resumeGame"); // "resumeGame" toggles pause in GameScene
+        });
     }
 
     updateScore(score: number) {
